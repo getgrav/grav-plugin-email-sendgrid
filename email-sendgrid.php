@@ -50,8 +50,9 @@ class EmailSendgridPlugin extends Plugin
         $engine = $e['engine'];
         if ($engine === 'sendgrid') {
             $options = $this->config->get('plugins.email-sendgrid');
-            $dsn = "sendgrid+{$options['transport']}://";
-            $dsn .= urlencode($options['api_key']);
+            $transport = $options['transport'] ?? '';
+            $dsn = "sendgrid+$transport://";
+            $dsn .= urlencode($options['api_key'] ?? '');
             $dsn .= "@default";
             $e['dsn'] = $dsn;
             $e->stopPropagation();
