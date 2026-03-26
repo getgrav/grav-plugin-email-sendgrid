@@ -1,6 +1,9 @@
 # v1.0.1
-## 05/09/2023
+## 03/26/2025
 
+1. [](#improve)
+   * Support for PHP 8.4+
+   * Updated to latest vendor libs
 1. [](#bugfix)
    * fix null config bug
 
