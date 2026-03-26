@@ -8,22 +8,22 @@
     "packages": [
         {
             "name": "symfony/sendgrid-mailer",
-            "version": "v5.4.7",
+            "version": "v5.4.35",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/sendgrid-mailer.git",
-                "reference": "8c1ef727aed18460e91a3ec54237a0e48b80a1dd"
+                "reference": "3d06d0cd4f689d0f541069f8c44399723568863e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/sendgrid-mailer/zipball/8c1ef727aed18460e91a3ec54237a0e48b80a1dd",
-                "reference": "8c1ef727aed18460e91a3ec54237a0e48b80a1dd",
+                "url": "https://api.github.com/repos/symfony/sendgrid-mailer/zipball/3d06d0cd4f689d0f541069f8c44399723568863e",
+                "reference": "3d06d0cd4f689d0f541069f8c44399723568863e",
                 "shasum": ""
             },
             "require": {
                 "php": ">=7.2.5",
                 "psr/event-dispatcher": "^1",
-                "symfony/mailer": "^4.4|^5.0|^6.0"
+                "symfony/mailer": "^5.4.21|^6.2.7"
             },
             "require-dev": {
                 "symfony/http-client": "^4.4|^5.0|^6.0"
@@ -54,7 +54,7 @@
             "description": "Symfony Sendgrid Mailer Bridge",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/sendgrid-mailer/tree/v5.4.7"
+                "source": "https://github.com/symfony/sendgrid-mailer/tree/v5.4.35"
             },
             "funding": [
                 {
@@ -70,7 +70,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-03-24T17:11:08+00:00"
+            "time": "2024-01-23T13:51:25+00:00"
         }
     ],
     "packages-dev": [],
@@ -86,5 +86,5 @@
     "platform-overrides": {
         "php": "7.3.6"
     },
-    "plugin-api-version": "2.3.0"
+    "plugin-api-version": "2.6.0"
 }
