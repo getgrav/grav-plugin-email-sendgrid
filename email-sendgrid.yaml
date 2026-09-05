@@ -1,3 +1,5 @@
 enabled: true
 transport: api
 api_key:
+public_key:
+setup_api_key:
