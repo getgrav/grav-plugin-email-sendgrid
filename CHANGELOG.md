@@ -1,5 +1,5 @@
 # v1.1.0
-## 09/04/2026
+## 09/05/2026
 
 1. [](#new)
     * SendGrid's delivery reports are now read by this plugin, through the Email plugin's provider contract, so anything on the site that records what happened to a message — delivered, bounced, marked as spam, opened, clicked, or dropped before it ever left — can ask rather than carrying a SendGrid parser of its own. The signature is checked first, over the raw request bytes exactly as they arrived, because that is what SendGrid signs; an event that arrives with no verification key on file is refused rather than accepted, and an event type nothing acts on is skipped quietly rather than refused, which is what stops SendGrid retrying it for a week
