@@ -32,14 +32,31 @@ use Grav\Plugin\Email\Providers\WebhookRequest;
  * temporary denial and the server may accept the message later.
  *
  * `dropped` is a third thing. SendGrid emits it when it refuses to send at
- * all — the address is on its own suppression list, or bounced before, or
- * reported spam — and it is reported here as the contract's own `dropped`
- * type rather than folded into a bounce, because nothing was ever handed to a
- * receiving server and a store may reasonably treat that differently. A store
- * that suppresses on it, as this add-on's callers do, reads the type; the
- * honest reading either way is that the address is not going to receive mail
- * through this transport, and a store that kept queueing it would send forty
- * thousand messages a month at an address SendGrid never attempts.
+ * all, and it is reported here as the contract's own `dropped` type rather
+ * than folded into a bounce, because nothing was ever handed to a receiving
+ * server and a store may reasonably treat that differently.
+ *
+ * ## Which drops are the address and which are the message
+ *
+ * A drop's `hard` says which, and SendGrid's `reason` is what decides it.
+ * Their documented values fall cleanly into the two halves:
+ *
+ * - The **address** (`hard` is true): `Unsubscribed Address`, `Bounced
+ *   Address`, `Spam Reporting Address` and `Invalid`. Every one of those is
+ *   SendGrid saying it holds this address on one of its own lists, or that the
+ *   address is not deliverable at all. The next message to it is refused too,
+ *   and a store may treat it as permanent.
+ * - The **message** (`hard` is false): `Invalid SMTPAPI header`, `Spam Content
+ *   (if spam checker app enabled)` and `Recipient List over Package Quota`.
+ *   None of those is the recipient's doing — a broken header is the sender's,
+ *   spam content is this message's, and a package quota is the merchant's
+ *   billing plan. A store that suppressed on one of these would take a
+ *   subscriber off its list for running out of allowance.
+ *
+ * Matched on the words, case-insensitively, so `Spam Content (if spam checker
+ * app enabled)` and a plain `Spam Content` both land in the same half. A reason
+ * that matches nothing is the message: the cost of that being wrong is one more
+ * refused message, and the cost of the other guess being wrong is a customer.
  *
  * `deferred` is not a bounce and is skipped: it is SendGrid still trying.
  *
@@ -95,6 +112,34 @@ final class SendGridReports implements DeliveryReports
         'spamreport' => Event::COMPLAINED,
         'open' => Event::OPENED,
         'click' => Event::CLICKED,
+    ];
+
+    /**
+     * Words in a drop's `reason` that name the message rather than the address.
+     *
+     * Checked before {@see ADDRESS_WORDS}, because two of SendGrid's documented
+     * reasons overlap with two of the others: `Invalid SMTPAPI header` shares a
+     * word with `Invalid`, and `Spam Content` shares one with `Spam Reporting
+     * Address`. Reading these first settles both.
+     *
+     * @var list<string>
+     */
+    public const MESSAGE_WORDS = [
+        'invalid smtpapi',
+        'spam content',
+        'package quota',
+    ];
+
+    /**
+     * Words that name the address, so the next message to it is refused too.
+     *
+     * @var list<string>
+     */
+    public const ADDRESS_WORDS = [
+        'unsubscribed address',
+        'bounced address',
+        'spam reporting address',
+        'invalid',
     ];
 
     /** How many events one request may carry before the rest are dropped. */
@@ -228,9 +273,13 @@ final class SendGridReports implements DeliveryReports
         $hard = null;
         if ($type === Event::BOUNCED) {
             // `blocked` is the soft one. Anything else arriving as a bounce is
-            // hard, which is what `type: bounce` means. A `dropped` is not a
-            // bounce and carries no `hard` at all — see the class note.
+            // hard, which is what `type: bounce` means.
             $hard = strtolower(trim((string)($row['type'] ?? 'bounce'))) !== 'blocked';
+        }
+
+        if ($type === Event::DROPPED) {
+            // On a drop `hard` means something else — see the class note.
+            $hard = self::refusedAddress((string)($row['reason'] ?? ''));
         }
 
         return Event::of(
@@ -245,6 +294,36 @@ final class SendGridReports implements DeliveryReports
             self::reason($row, $type),
             self::sendId($row),
         );
+    }
+
+    /**
+     * Whether a drop was SendGrid refusing the address or refusing the message.
+     *
+     * True is the address and false is the message, which is what the contract
+     * puts on `Event::$hard` for a drop. Their `reason` is the whole of the
+     * evidence, and it is read for {@see MESSAGE_WORDS} first — see the class
+     * note for why the order is not a preference.
+     */
+    private static function refusedAddress(string $reason): bool
+    {
+        $reason = mb_strtolower(trim($reason));
+        if ($reason === '') {
+            return false;
+        }
+
+        foreach (self::MESSAGE_WORDS as $word) {
+            if (str_contains($reason, $word)) {
+                return false;
+            }
+        }
+
+        foreach (self::ADDRESS_WORDS as $word) {
+            if (str_contains($reason, $word)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

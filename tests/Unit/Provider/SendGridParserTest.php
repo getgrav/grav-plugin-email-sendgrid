@@ -67,13 +67,23 @@ final class SendGridParserTest extends TestCase
 
         // Dropped is SendGrid refusing to try at all. The contract has its own
         // word for that, and this parser uses it rather than folding it into a
-        // bounce; `hard` stays null because nothing was ever handed to a
-        // receiving server for it to be permanent or temporary about.
+        // bounce. Their own sample's reason is `Bounced Address`, which is the
+        // address: SendGrid holds it on one of its own lists and the next
+        // message to it is refused too.
         yield 'dropped' => ['dropped', [
             'type' => Event::DROPPED,
-            'hard' => null,
+            'hard' => true,
             'email' => 'alex@example.com',
             'reason' => 'Bounced Address',
+        ]];
+
+        // The other half. A package quota is the merchant's billing plan and
+        // has nothing to do with the person it was addressed to.
+        yield 'dropped over quota' => ['dropped-over-quota', [
+            'type' => Event::DROPPED,
+            'hard' => false,
+            'email' => 'alex@example.com',
+            'reason' => 'Recipient List over Package Quota',
         ]];
 
         yield 'complaint' => ['spamreport', [
@@ -300,6 +310,57 @@ final class SendGridParserTest extends TestCase
         foreach ((new SendGridReports())->events() as $type) {
             self::assertContains($type, Event::TYPES, "{$type} is not one of the contract's words");
         }
+    }
+
+    /**
+     * SendGrid's seven documented drop reasons, and which half each is in.
+     *
+     * @return iterable<string, array{0: string, 1: bool}>
+     */
+    public static function dropReasons(): iterable
+    {
+        // The address. SendGrid holds it on one of its own lists, or it is not
+        // a deliverable address at all.
+        yield 'Unsubscribed Address' => ['Unsubscribed Address', true];
+        yield 'Bounced Address' => ['Bounced Address', true];
+        yield 'Spam Reporting Address' => ['Spam Reporting Address', true];
+        yield 'Invalid' => ['Invalid', true];
+
+        // The message. None of it is the recipient's doing.
+        yield 'Invalid SMTPAPI header' => ['Invalid SMTPAPI header', false];
+        yield 'Spam Content' => ['Spam Content (if spam checker app enabled)', false];
+        yield 'Recipient List over Package Quota' => ['Recipient List over Package Quota', false];
+
+        // The two that share a word with something in the other half, which is
+        // why the message words are read first.
+        yield 'Spam Content on its own' => ['Spam Content', false];
+        yield 'lower case is the same reason' => ['unsubscribed address', true];
+
+        // Anything that cannot be placed is the message, which is the guess
+        // that costs a store a message rather than a subscriber.
+        yield 'a reason nobody has seen before' => ['Something went wrong', false];
+        yield 'no reason at all' => ['', false];
+    }
+
+    #[DataProvider('dropReasons')]
+    public function testADropSaysWhetherItWasTheAddressOrTheMessage(string $reason, bool $expected): void
+    {
+        $body = json_encode([[
+            'event' => 'dropped',
+            'email' => 'alex@example.com',
+            'timestamp' => 1513299569,
+            'reason' => $reason,
+        ]], JSON_THROW_ON_ERROR);
+
+        $payload = (new SendGridReports())->parse(new WebhookRequest(
+            headers: ['content-type' => 'application/json'],
+            body: $body,
+        ));
+
+        self::assertCount(1, $payload->events);
+        self::assertSame(Event::DROPPED, $payload->events[0]->type);
+        self::assertSame($expected, $payload->events[0]->hard, $reason === '' ? 'no reason' : $reason);
+        self::assertSame($expected, $payload->events[0]->isRefusedAddress());
     }
 
     // ------------------------------------------------------------- internals
