@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Grav\Plugin\EmailSendgrid\Tests\Unit\Provider;
 
 use Grav\Plugin\Email\Providers\Event;
+use Grav\Plugin\Email\Providers\SendHeader;
 use Grav\Plugin\Email\Providers\WebhookRequest;
 use Grav\Plugin\EmailSendgrid\Provider\SendGridReports;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -219,13 +220,14 @@ final class SendGridParserTest extends TestCase
             'event' => 'delivered',
             'email' => 'a@example.com',
             'timestamp' => 1737000000,
-            'X-KahunaCart-Send' => '77',
+            'X-Grav-Send-Id' => '77',
         ]]);
 
         $event = (new SendGridReports())->parse(new WebhookRequest(body: $body))->events[0];
 
         self::assertSame('77', $event->sendId, 'the contract carries it as the string the provider handed back');
-        self::assertSame(SendGridReports::SEND_HEADER, (new SendGridReports())->sendHeader());
+        self::assertSame(SendHeader::name(), (new SendGridReports())->sendHeader(), 'the Email plugin names it');
+        self::assertSame('X-Grav-Send-Id', (new SendGridReports())->sendHeader());
     }
 
     /** The same argument spelled in lower case, which is a provider's to choose. */
@@ -234,7 +236,7 @@ final class SendGridParserTest extends TestCase
         $body = (string)json_encode([[
             'event' => 'delivered',
             'timestamp' => 1737000000,
-            'x-kahunacart-send' => 41,
+            'x-grav-send-id' => 41,
         ]]);
 
         $event = (new SendGridReports())->parse(new WebhookRequest(body: $body))->events[0];

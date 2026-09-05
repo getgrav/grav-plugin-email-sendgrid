@@ -8,6 +8,7 @@
     * A **Setup API Key** field, for a store that sends with a key restricted to Mail Send. A Mail Send key cannot create a webhook, and the alternative would be putting a full-access key in the field the plugin sends with. Nothing sends with this one
     * What this transport does to a message on the way out is now answered rather than guessed at: custom headers and the RFC 8058 unsubscribe pair both reach the wire, over SMTP and over the API, and SendGrid does not send headers back in a webhook at all. A screen can now say that instead of a store finding out a year later
     * What SendGrid needs a sending domain's DNS to say — the SPF host, the zone its DKIM selectors point into, the zone a custom return path points into — so a deliverability check can stop carrying a table of it
+    * The custom arg a send id travels in is now named by the Email plugin rather than by this one. It is `X-Grav-Send-Id`, or whatever `providers.send_header` in the Email plugin's configuration says, and it used to be `X-KahunaCart-Send` — another product's name in a Team Grav plugin. Whatever sends the mail sets the custom arg under the same name, so the two ends cannot disagree about it.
     * A test suite, run with `tests/vendor/bin/phpunit` after `composer install` inside `tests/`. It installs into `tests/vendor` from its own `tests/composer.json`, so the `vendor` directory the plugin ships stays free of development packages. Point `EMAIL_PLUGIN_ROOT` at your Email plugin checkout if it is not the sibling folder
 
 # v1.0.2

@@ -7,6 +7,7 @@ namespace Grav\Plugin\EmailSendgrid\Provider;
 use Grav\Plugin\Email\Providers\DeliveryReports;
 use Grav\Plugin\Email\Providers\Event;
 use Grav\Plugin\Email\Providers\Payload;
+use Grav\Plugin\Email\Providers\SendHeader;
 use Grav\Plugin\Email\Providers\Verdict;
 use Grav\Plugin\Email\Providers\WebhookRequest;
 
@@ -86,17 +87,6 @@ final class SendGridReports implements DeliveryReports
     /** The config key the verification key is kept under, in this plugin's own config. */
     public const KEY = 'public_key';
 
-    /**
-     * The header a store stamps its send id into.
-     *
-     * SendGrid does not echo message headers in its webhooks at all; what it
-     * echoes is custom args, as top-level keys on the event. A store that wants
-     * this path sets a custom arg of the same name — over SMTP that is the
-     * `unique_args` map inside `X-SMTPAPI`. The name is answered here so the
-     * store and this parser cannot disagree about it.
-     */
-    public const SEND_HEADER = 'X-KahunaCart-Send';
-
     /** @var array<string, string> their event names to the contract's */
     public const TYPES = [
         'delivered' => Event::DELIVERED,
@@ -123,9 +113,19 @@ final class SendGridReports implements DeliveryReports
         return [self::KEY];
     }
 
+    /**
+     * The name the Email plugin answers, which is `X-Grav-Send-Id` unless the
+     * site says otherwise.
+     *
+     * SendGrid does not echo message headers in its webhooks at all; what it
+     * echoes is custom args, as top-level keys on the event. So a store that
+     * wants this path sets a custom arg under this name rather than a header —
+     * over SMTP that is the `unique_args` map inside `X-SMTPAPI` — and this is
+     * the name it uses.
+     */
     public function sendHeader(): string
     {
-        return self::SEND_HEADER;
+        return SendHeader::name();
     }
 
     public function verify(WebhookRequest $request, array $config): Verdict
@@ -278,23 +278,7 @@ final class SendGridReports implements DeliveryReports
      */
     private static function sendId(array $row): ?string
     {
-        foreach ([self::SEND_HEADER, strtolower(self::SEND_HEADER)] as $key) {
-            if (!\array_key_exists($key, $row)) {
-                continue;
-            }
-
-            $value = $row[$key];
-            if (!\is_string($value) && !\is_int($value) && !\is_float($value)) {
-                continue;
-            }
-
-            $value = trim((string)$value);
-            if ($value !== '') {
-                return $value;
-            }
-        }
-
-        return null;
+        return SendHeader::idIn($row);
     }
 
     /**
