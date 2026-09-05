@@ -1,0 +1,8 @@
+[
+   {
+      "event":"account_status_change",
+      "sg_event_id":"MjEzNTg5OTcyOC10ZXJtaW5hdGUtMTcwNzg1MTUzMQ",
+      "timestamp":1709142428,
+      "type":"compliance_suspend"
+   }
+]

@@ -1,0 +1,10 @@
+[
+   {
+      "email": "alex@example.com",
+      "timestamp": 1513299569,
+      "event": "unsubscribe",
+      "category": "cat facts",
+      "sg_event_id": "zz_BjPgU_5pS-J8vlfB1sg==",
+      "sg_message_id": "14c5d75ce93.dfd.64b469.filter0001.16648.5515E0B88.0"
+   }
+]
