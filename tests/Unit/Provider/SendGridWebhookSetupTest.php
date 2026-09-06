@@ -118,6 +118,62 @@ final class SendGridWebhookSetupTest extends TestCase
     }
 
     /**
+     * A webhook registered against an older secret is pointed at the new
+     * address rather than left dead beside a new one.
+     */
+    public function testAWebhookOnAnOlderSecretIsPointedAtTheNewAddress(): void
+    {
+        $http = new FakeHttp([
+            FakeHttp::answer(200, ['webhooks' => [
+                ['id' => 'wh_other', 'url' => 'https://somewhere.else/hook'],
+                ['id' => 'wh_ours', 'url' => 'https://store.example/newsletter/webhook/sendgrid/the-old-secret'],
+            ]]),
+            FakeHttp::answer(200, ['id' => 'wh_ours']),
+            FakeHttp::answer(200, ['id' => 'wh_ours', 'public_key' => 'MFkw']),
+        ]);
+
+        $result = $this->button($http)->create(self::URL, self::EVENTS, ['api_key' => 'SG.key']);
+
+        self::assertTrue($result->ok, $result->message);
+        self::assertSame('wh_ours', $result->webhookId);
+        self::assertStringContainsString('older secret', $result->message);
+
+        $written = $http->call(1);
+        self::assertSame('PATCH', $written['method'], 'nothing should have been created');
+        self::assertSame(SendGridApi::BASE . '/user/webhooks/event/settings/wh_ours', $written['url']);
+        self::assertSame(self::URL, $written['body']['url']);
+        self::assertTrue($written['body']['enabled']);
+
+        foreach (['delivered', 'bounce', 'spam_report', 'open', 'click', 'dropped'] as $flag) {
+            self::assertTrue($written['body'][$flag], "{$flag} should be on");
+        }
+
+        foreach (['processed', 'deferred', 'unsubscribe', 'group_unsubscribe', 'group_resubscribe'] as $flag) {
+            self::assertFalse($written['body'][$flag], "{$flag} should be explicitly off");
+        }
+
+        self::assertSame('PATCH', $http->call(2)['method'], 'signing is still turned on');
+        self::assertSame(SendGridApi::BASE . '/user/webhooks/event/settings/signed/wh_ours', $http->call(2)['url']);
+    }
+
+    /** A refused repointing comes back as SendGrid's own sentence. */
+    public function testARefusedRepointingIsAPlainSentence(): void
+    {
+        $http = new FakeHttp([
+            FakeHttp::answer(200, ['webhooks' => [
+                ['id' => 'wh_ours', 'url' => 'https://store.example/newsletter/webhook/sendgrid/the-old-secret'],
+            ]]),
+            FakeHttp::answer(403, ['errors' => [['message' => 'access forbidden']]]),
+        ]);
+
+        $result = $this->button($http)->create(self::URL, self::EVENTS, ['api_key' => 'SG.key']);
+
+        self::assertFalse($result->ok);
+        self::assertStringContainsString('access forbidden', $result->message);
+        self::assertStringContainsString('Webhook', $result->message);
+    }
+
+    /**
      * A key that cannot manage webhooks comes back in SendGrid's own words,
      * with the permission it needs named.
      */

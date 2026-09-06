@@ -34,6 +34,15 @@ use Grav\Plugin\Email\Providers\WebhookSetup;
  *    with is worse than no webhook at all: every event is refused and the
  *    dashboard looks finished.
  *
+ * ## Pressing it after the secret changed
+ *
+ * A new secret is a new address, so the webhook SendGrid holds is posting at
+ * one that answers 404 and the store looks as though nothing is registered. It
+ * is still recognisably this store's webhook: the URL sits under the same
+ * endpoint and only the secret on the end is different. So {@see create()}
+ * finds it by that endpoint and points it at the new address rather than
+ * creating a second one beside a dead one, and says so.
+ *
  * ## When the key cannot be saved
  *
  * The saving happens through a closure the plugin hands in, and where there is
@@ -101,6 +110,16 @@ final class SendGridWebhookSetup implements WebhookSetup
 
         $id = self::ourWebhookIn($existing['webhooks'], $url);
 
+        // The store's own webhook against a secret that has since changed.
+        // Editing it to the new address is the only move that leaves one
+        // working webhook; creating a second one leaves a dead webhook beside
+        // it, still counted against the account.
+        $repointed = false;
+        if ($id === null) {
+            $id = self::staleWebhookIn($existing['webhooks'], $url);
+            $repointed = $id !== null;
+        }
+
         $written = $id === null
             ? $this->api->create($apiKey, $url, $events)
             : $this->api->update($apiKey, $id, $url, $events);
@@ -111,12 +130,17 @@ final class SendGridWebhookSetup implements WebhookSetup
 
         $id = $written['id'] ?? $id;
 
+        $note = $repointed
+            ? 'SendGrid had this store\'s webhook registered with an older secret. It now points at this address. '
+            : '';
+
         if ($id === null) {
             // Nothing to turn signing on for. The webhook is there and unsigned
             // and the URL secret is protecting it, which is worth saying rather
             // than failing outright.
             return SetupResult::ok(
-                'The webhook was created in SendGrid, but SendGrid did not hand back an id for it, so signing could '
+                $note
+                . 'The webhook was created in SendGrid, but SendGrid did not hand back an id for it, so signing could '
                 . 'not be turned on. Turn on Signed Event Webhook for it by hand and paste the verification key into '
                 . 'the Verification key field here.'
             );
@@ -125,7 +149,8 @@ final class SendGridWebhookSetup implements WebhookSetup
         $signed = $this->api->enableSigning($apiKey, $id);
         if (!$signed['ok']) {
             return SetupResult::ok(
-                'The webhook is set up in SendGrid, but signing could not be turned on: ' . $signed['message']
+                $note
+                . 'The webhook is set up in SendGrid, but signing could not be turned on: ' . $signed['message']
                 . ' Turn on Signed Event Webhook for it by hand and paste the verification key into the Verification '
                 . 'key field here.',
                 $id
@@ -135,11 +160,11 @@ final class SendGridWebhookSetup implements WebhookSetup
         $saved = $this->saveKey !== null && $this->store($signed['public_key']);
 
         return SetupResult::ok(
-            $saved
+            $note . ($saved
                 ? 'The webhook is set up in SendGrid, signing is on, and the verification key has been saved here. '
                     . 'Delivery reports should start arriving with the next campaign.'
                 : 'The webhook is set up in SendGrid and signing is on, but the verification key could not be saved '
-                    . 'here. Paste this into the Verification key field and save: ' . $signed['public_key'],
+                    . 'here. Paste this into the Verification key field and save: ' . $signed['public_key']),
             $id
         );
     }
@@ -176,6 +201,52 @@ final class SendGridWebhookSetup implements WebhookSetup
         }
 
         return null;
+    }
+
+    /**
+     * The id of this store's webhook registered against an older secret, or null.
+     *
+     * A webhook address is the store's endpoint followed by a secret, so a
+     * webhook sitting under the same endpoint but not at the whole address is
+     * this store's own against a secret that has since changed. Nobody else's
+     * webhook can be under that endpoint, which is why matching on it is safe.
+     *
+     * Only looked for once the exact match has come up empty, so a webhook
+     * already at the right address is never mistaken for a stale one.
+     *
+     * @param list<array<string, mixed>> $webhooks
+     */
+    private static function staleWebhookIn(array $webhooks, string $url): ?string
+    {
+        $wanted = self::normalise($url);
+        $endpoint = self::endpointOf($wanted);
+
+        if ($endpoint === '') {
+            return null;
+        }
+
+        foreach ($webhooks as $webhook) {
+            $theirs = self::normalise((string)($webhook['url'] ?? ''));
+            if ($theirs !== $wanted && str_starts_with($theirs, $endpoint)) {
+                $id = SendGridApi::idIn($webhook);
+                if ($id !== null) {
+                    return $id;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * The address without its secret: everything up to and including the last
+     * slash. Two addresses that share it belong to the same store.
+     */
+    private static function endpointOf(string $url): string
+    {
+        $cut = strrpos($url, '/');
+
+        return $cut === false || $cut < \strlen('https://x/') ? '' : substr($url, 0, $cut + 1);
     }
 
     private static function normalise(string $url): string

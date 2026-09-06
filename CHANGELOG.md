@@ -1,3 +1,9 @@
+# v1.1.1
+## 09/05/2026
+
+1. [](#bugfix)
+    * **Set up now repairs a webhook whose address has changed.** A store that generated a new secret, or lost its settings, was told nothing was registered while SendGrid still held a webhook at the old address, and pressing Set up made a second one beside the dead one. Set up now recognises the store's own webhook by its endpoint and points it at the new address, with the same six events asked for and the other five turned off, and signing turned on as before.
+
 # v1.1.0
 ## 09/05/2026
 
