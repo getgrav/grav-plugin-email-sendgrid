@@ -220,6 +220,53 @@ final class SendGridParserTest extends TestCase
     }
 
     /**
+     * The two ends of SendGrid print its id differently, and the shorter one
+     * is the one a store has stored.
+     *
+     * Found on a live send. The API answers with `X-Message-Id:
+     * Q16RD9etQBG1HyE4UCl3VQ`, and every event about that message carries
+     * `sg_message_id: Q16RD9etQBG1HyE4UCl3VQ.recvd-6d4864cb4-…-D.0` — the same
+     * id with SendGrid's internal routing on the end. Compared whole they
+     * never match.
+     *
+     * What made it invisible: `delivered` also carries `smtp-id`, so that one
+     * event still found its send. `open` and `click` carry neither that nor
+     * custom args, so both arrived belonging to nobody — while the screen
+     * looked correct, because the store's own pixel and click redirect had
+     * already stamped the row. Every fixture in this directory has carried the
+     * dotted form since the day they were written; nothing ever asserted what
+     * came out of it.
+     */
+    public function testTheEventIdIsTheOneTheApiAnsweredTheSendWith(): void
+    {
+        $body = (string)json_encode([[
+            'event' => 'open',
+            'email' => 'a@example.com',
+            'timestamp' => 1737000000,
+            'sg_message_id' => 'Q16RD9etQBG1HyE4UCl3VQ.recvd-6d4864cb4-xz4sd-1-6AA09607-D.0',
+        ]]);
+
+        $event = (new SendGridReports())->parse(new WebhookRequest(body: $body))->events[0];
+
+        self::assertSame('Q16RD9etQBG1HyE4UCl3VQ', $event->providerId);
+    }
+
+    /** An id with no routing on it is already the one the send reported. */
+    public function testAnIdWithNoRoutingOnItIsLeftAlone(): void
+    {
+        $body = (string)json_encode([[
+            'event' => 'open',
+            'email' => 'a@example.com',
+            'timestamp' => 1737000000,
+            'sg_message_id' => 'Q16RD9etQBG1HyE4UCl3VQ',
+        ]]);
+
+        $event = (new SendGridReports())->parse(new WebhookRequest(body: $body))->events[0];
+
+        self::assertSame('Q16RD9etQBG1HyE4UCl3VQ', $event->providerId);
+    }
+
+    /**
      * A SendGrid custom argument arrives as a top-level key on the event rather
      * than nested, which is the one thing about their unique args that is easy
      * to get wrong.
