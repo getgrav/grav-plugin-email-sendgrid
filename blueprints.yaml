@@ -1,7 +1,7 @@
 name: Email Sendgrid
 slug: email-sendgrid
 type: plugin
-version: 1.1.2
+version: 1.1.3
 testing: false
 description: Sendgrid integration for new Email plugin
 icon: envelope
@@ -38,33 +38,32 @@ form:
     transport:
       type: select
       size: small
-      label: Transport
+      label: PLUGIN_EMAIL_SENDGRID.TRANSPORT_LABEL
       default: api
       options:
-        api: API (faster)
-        smtp: SMTP
+        api: PLUGIN_EMAIL_SENDGRID.TRANSPORT_API
+        smtp: PLUGIN_EMAIL_SENDGRID.TRANSPORT_SMTP
 
     api_key:
       type: password
-      label: API Key
-      help: The key SendGrid sends with. Settings, then API Keys, then Create API Key. Mail Send is all it needs to send.
+      label: PLUGIN_EMAIL_SENDGRID.API_KEY_LABEL
+      help: PLUGIN_EMAIL_SENDGRID.API_KEY_HELP
       validate:
         required: true
 
     delivery_reports:
       type: section
-      title: Delivery reports
+      title: PLUGIN_EMAIL_SENDGRID.DELIVERY_REPORTS_TITLE
       underline: true
-      text: SendGrid can tell this site what happened to each message it sent — delivered, bounced, marked as spam, opened, clicked. An add-on that receives those reports gives you a webhook address to register; these two fields are what SendGrid needs from this end. Nothing here affects sending.
+      text: PLUGIN_EMAIL_SENDGRID.DELIVERY_REPORTS_TEXT
 
     public_key:
       type: textarea
       rows: 3
-      label: Verification key
-      help: The key that proves an event really came from SendGrid. Settings, then Mail Settings, then Event Webhooks — open the webhook, turn on Signed Event Webhook, press Save, and the key appears. Paste it exactly as SendGrid shows it. Pressing Set up fills this in for you.
+      label: PLUGIN_EMAIL_SENDGRID.VERIFICATION_KEY_LABEL
+      help: PLUGIN_EMAIL_SENDGRID.VERIFICATION_KEY_HELP
 
     setup_api_key:
       type: password
-      label: Setup API Key
-      help: Only needed if the key above is restricted to Mail Send, which cannot create a webhook. Make a second key in SendGrid with full access to Webhook and paste it here. Nothing sends with it; it is used only when you press Set up.
-
+      label: PLUGIN_EMAIL_SENDGRID.SETUP_API_KEY_LABEL
+      help: PLUGIN_EMAIL_SENDGRID.SETUP_API_KEY_HELP
