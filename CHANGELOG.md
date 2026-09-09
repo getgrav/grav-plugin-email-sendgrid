@@ -2,6 +2,7 @@
 ## 09/08/2026
 
 1. [](#bugfix)
+    * **The API key and the setup key are no longer shown in the clear.** Every credential field in this plugin was typed `text`, so an account's sending credentials were rendered as readable text on the settings page and handed to the browser unmasked by the API. They are `password` fields now. The verification key stays readable, because it is a public key and reading it gives nobody anything.
     * **A delivery report is matched by the id the send actually reported.** SendGrid prints its own id two different ways: the API answers a send with `X-Message-Id: Q16RD9etQBG1HyE4UCl3VQ`, and every event about that message carries `sg_message_id: Q16RD9etQBG1HyE4UCl3VQ.recvd-6d4864cb4-…-D.0` — the same id with SendGrid's internal routing appended. Compared whole they never match, so a store correlating on the provider's id got nothing back from the one provider that hands out an id worth keeping. The routing is now taken off, leaving the id the send reported. What hid it: a `delivered` event also carries `smtp-id`, so that one still found its send, while `open` and `click` carry neither that nor custom args and arrived belonging to nobody — and the screen looked right anyway, because the store's own open pixel and click redirect had already stamped the row. The fixtures in this plugin's tests have carried the dotted form since the day they were written, and nothing ever asserted what came out of it
 
 # v1.1.1
