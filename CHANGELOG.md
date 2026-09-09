@@ -1,3 +1,9 @@
+# v1.1.3
+## 09/09/2026
+
+1. [](#improved)
+    * The plugin settings are now translated rather than hardcoded English, with a Spanish translation included, and the strings are provided in both the flat and ICU forms so the labels render correctly in Admin 2.x as well as the Grav 1.7 admin [#3](https://github.com/getgrav/grav-plugin-email-sendgrid/pull/3)
+
 # v1.1.2
 ## 09/08/2026
 
