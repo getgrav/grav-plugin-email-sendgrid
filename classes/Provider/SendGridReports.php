@@ -289,11 +289,39 @@ final class SendGridReports implements DeliveryReports
             // Their `smtp-id` is our Message-ID, brackets and all, and one of
             // their own samples ships with a leading space in front of it.
             trim((string)($row['smtp-id'] ?? '')),
-            trim((string)($row['sg_message_id'] ?? '')),
+            self::providerId($row['sg_message_id'] ?? null),
             self::moment($row['timestamp'] ?? null) ?? 0,
             self::reason($row, $type),
             self::sendId($row),
         );
+    }
+
+    /**
+     * SendGrid's own id for the message, as the send itself reported it.
+     *
+     * The two ends do not print the same string. The API answers a send with
+     * `X-Message-Id: Q16RD9etQBG1HyE4UCl3VQ`, and every event about that
+     * message carries `sg_message_id:
+     * Q16RD9etQBG1HyE4UCl3VQ.recvd-6d4864cb4-xz4sd-1-6AA09607-D.0` — the same
+     * id with SendGrid's internal routing appended. Compared whole they never
+     * match, so a store correlating on the provider's id gets nothing back
+     * from the one provider that hands out an id worth keeping.
+     *
+     * Found on a live send: the `delivered` event still matched, because it
+     * also carries `smtp-id`, but `open` and `click` carry neither that nor
+     * custom args, and both arrived belonging to nobody. Nothing looked wrong
+     * on the screen, because the store's own pixel and click redirect had
+     * already stamped the row.
+     *
+     * The base is URL-safe base64 and holds no dot of its own, so the first
+     * one is always where SendGrid's part begins.
+     */
+    private static function providerId(mixed $id): string
+    {
+        $id = trim((string)$id);
+        $dot = strpos($id, '.');
+
+        return $dot === false ? $id : substr($id, 0, $dot);
     }
 
     /**

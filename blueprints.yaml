@@ -1,7 +1,7 @@
 name: Email Sendgrid
 slug: email-sendgrid
 type: plugin
-version: 1.1.1
+version: 1.1.2
 testing: false
 description: Sendgrid integration for new Email plugin
 icon: envelope
@@ -45,7 +45,7 @@ form:
         smtp: SMTP
 
     api_key:
-      type: text
+      type: password
       label: API Key
       help: The key SendGrid sends with. Settings, then API Keys, then Create API Key. Mail Send is all it needs to send.
       validate:
@@ -64,7 +64,7 @@ form:
       help: The key that proves an event really came from SendGrid. Settings, then Mail Settings, then Event Webhooks — open the webhook, turn on Signed Event Webhook, press Save, and the key appears. Paste it exactly as SendGrid shows it. Pressing Set up fills this in for you.
 
     setup_api_key:
-      type: text
+      type: password
       label: Setup API Key
       help: Only needed if the key above is restricted to Mail Send, which cannot create a webhook. Make a second key in SendGrid with full access to Webhook and paste it here. Nothing sends with it; it is used only when you press Set up.
 
