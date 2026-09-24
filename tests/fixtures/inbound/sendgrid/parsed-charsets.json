@@ -1,0 +1,21 @@
+{
+  "_comment": "Parsed mode with bodies in legacy charsets. The test converts each field named in _encode from UTF-8 to that charset before posting, because JSON cannot hold the raw bytes. SendGrid's charsets field names the same charsets.",
+  "_encode": {
+    "text": "ISO-8859-1",
+    "html": "Windows-1252",
+    "subject": "ISO-8859-1"
+  },
+  "fields": {
+    "headers": "From: Jürgen Weiß <juergen@example.de>\nTo: support@reply.example.com\nSubject: =?ISO-8859-1?Q?M=FCnchen_Bestellung?=\nMessage-ID: <1234.5678@example.de>\nDate: Wed, 23 Sep 2026 09:00:00 +0200\nContent-Type: multipart/alternative; boundary=\"b1\"\n",
+    "from": "Jürgen Weiß <juergen@example.de>",
+    "to": "support@reply.example.com",
+    "subject": "München Bestellung",
+    "text": "Grüße aus München, die Bestellung ist fällig.\n",
+    "html": "<p>Grüße aus München – “bitte” prüfen.</p>\n",
+    "envelope": "{\"to\": [\"support@reply.example.com\"], \"from\": \"juergen@example.de\"}",
+    "charsets": "{\"to\": \"UTF-8\", \"from\": \"UTF-8\", \"subject\": \"iso-8859-1\", \"text\": \"iso-8859-1\", \"html\": \"windows-1252\"}",
+    "SPF": "softfail",
+    "dkim": "none",
+    "attachments": "0"
+  }
+}
