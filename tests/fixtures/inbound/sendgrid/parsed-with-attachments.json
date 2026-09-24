@@ -1,0 +1,34 @@
+{
+  "_comment": "SendGrid Inbound Parse, default (parsed) mode, with one inline image and one attachment. Field names and value formats from twilio.com/docs/sendgrid/for-developers/parsing-email/setting-up-the-inbound-parse-webhook. The files are attachment1.png and attachment2.pdf beside this one.",
+  "fields": {
+    "headers": "Received: by mx0047p1mdw1.sendgrid.net with SMTP id 6WCVv7KAWn Wed, 23 Sep 2026 10:12:18 +0000 (UTC)\nReceived: from mail-wm1-f45.google.com (mail-wm1-f45.google.com [209.85.128.45]) by mx0047p1mdw1.sendgrid.net (Postfix) with ESMTPS id 1B2C3D4E5F for <support+t8f2k@reply.example.com>; Wed, 23 Sep 2026 10:12:18 +0000 (UTC)\nDKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20230601; h=to:subject:message-id:date:from:mime-version; bh=abc=; b=def=\nMIME-Version: 1.0\nFrom: =?UTF-8?Q?Ren=C3=A9e_Dubois?= <renee@example.net>\nDate: Wed, 23 Sep 2026 12:12:04 +0200\nMessage-ID: <CAF=r7x+Yk2Qm0a@mail.gmail.com>\nIn-Reply-To: <hd.1042.aa11@helpdesk.example.com>\nReferences: <hd.1041.ff00@helpdesk.example.com> <hd.1042.aa11@helpdesk.example.com>\nSubject: =?UTF-8?Q?Re:_[#1042]_Caf=C3=A9_menu_printer?=\nTo: Support <support@reply.example.com>\nCc: Ops <ops@example.net>\nContent-Type: multipart/mixed; boundary=\"000000000000b1c2d3e4f5a6b7c8\"\n",
+    "dkim": "{@gmail.com : pass}",
+    "content-ids": "{\"ii_lf8x0abc1\": \"attachment1\"}",
+    "to": "Support <support@reply.example.com>",
+    "cc": "Ops <ops@example.net>",
+    "html": "<div dir=\"ltr\">The printer prints the menu twice.<br><img src=\"cid:ii_lf8x0abc1\" alt=\"photo.png\"></div>\n",
+    "from": "Renée Dubois <renee@example.net>",
+    "text": "The printer prints the menu twice.\n[image: photo.png]\n\nOn Tue, 22 Sep 2026 at 18:00, Support <support@reply.example.com> wrote:\n> Which printer is it?\n",
+    "sender_ip": "209.85.128.45",
+    "spam_report": "Spam detection software, running on the system \"mx0047p1mdw1.sendgrid.net\", has NOT identified this incoming email as spam.\n\nContent analysis details:   (0.1 points, 5.0 required)\n",
+    "envelope": "{\"to\": [\"support+t8f2k@reply.example.com\"], \"from\": \"renee@example.net\"}",
+    "attachments": "2",
+    "subject": "Re: [#1042] Café menu printer",
+    "attachment-info": "{\"attachment1\": {\"filename\": \"photo.png\", \"name\": \"photo.png\", \"type\": \"image/png\", \"content-id\": \"ii_lf8x0abc1\"}, \"attachment2\": {\"filename\": \"../../etc/menu.pdf\", \"name\": \"menu.pdf\", \"type\": \"application/pdf\"}}",
+    "charsets": "{\"to\": \"UTF-8\", \"cc\": \"UTF-8\", \"html\": \"UTF-8\", \"subject\": \"UTF-8\", \"from\": \"UTF-8\", \"text\": \"UTF-8\"}",
+    "SPF": "pass",
+    "spam_score": "0.1"
+  },
+  "files": {
+    "attachment1": {
+      "filename": "photo.png",
+      "type": "image/png",
+      "file": "attachment1.png"
+    },
+    "attachment2": {
+      "filename": "menu.pdf",
+      "type": "application/pdf",
+      "file": "attachment2.pdf"
+    }
+  }
+}
