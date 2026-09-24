@@ -1,5 +1,5 @@
 # v1.2.0
-## 09/23/2026
+## 09/24/2026
 
 1. [](#new)
     * **Receiving mail through SendGrid's Inbound Parse.** On an Email plugin that has inbound mail, this plugin now offers a `sendgrid` receiver, so an add-on that receives email (a helpdesk, say) can take SendGrid's posts without knowing anything about SendGrid. It reads both ways SendGrid posts: the whole message when "POST the raw, full MIME message" is ticked, which is the one to use, and SendGrid's parsed form with its headers, bodies, `attachmentN` files, `attachment-info` and `content-ids`. Bodies are converted to UTF-8 by the charsets SendGrid names, the SMTP envelope is kept (it is where a `support+token@` address survives), and SendGrid's SPF and DKIM results and spam score are passed along
