@@ -3,3 +3,6 @@ transport: api
 api_key:
 public_key:
 setup_api_key:
+inbound_public_key:
+inbound_username:
+inbound_password:
