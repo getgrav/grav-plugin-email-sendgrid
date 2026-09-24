@@ -12,6 +12,14 @@ PLUGIN_EMAIL_SENDGRID:
   SETUP_API_KEY_HELP: "Only needed if the key above is restricted to Mail Send, which cannot create a webhook. Make a second key in SendGrid with full access to Webhook and paste it here. Nothing sends with it; it is used only when you press Set up."
   PROVIDER_INSTRUCTIONS: "In SendGrid, go to Settings, then Mail Settings, then Event Webhooks, and add a webhook with this address. Tick Delivered, Bounced, Dropped, Spam Reports, Opened and Clicked, and leave Processed, Deferred and the three unsubscribe events off, because nothing here acts on them. Then turn on Signed Event Webhook and press Save: the verification key does not exist until that first save. Copy the key it shows into the Verification key field in this plugin's settings, exactly as SendGrid prints it, and the PEM wrapper will be added for you."
   ECHO_NOTE: "SendGrid does not send message headers back in its webhooks. It sends the message's custom args instead, as top-level fields on the event, so a send id has to go out as a custom arg — over SMTP that is the unique_args map inside the X-SMTPAPI header. Correlating on Message-ID needs none of that and works on every event, because SendGrid echoes it as smtp-id."
+  RECEIVING_MAIL_TITLE: "Receiving mail"
+  RECEIVING_MAIL_TEXT: "SendGrid's Inbound Parse can post the mail sent to your domain to this site, for an add-on that receives email such as a helpdesk. The add-on gives you the address to paste into SendGrid. These fields are optional: without them, the long secret in that address is what protects it. Nothing here affects sending."
+  INBOUND_PUBLIC_KEY_LABEL: "Inbound public key"
+  INBOUND_PUBLIC_KEY_HELP: "The public key of a Parse security policy with signature verification, if you attached one to your Inbound Parse host through SendGrid's API. Signed posts can only be checked where PHP keeps the raw request body (enable_post_data_reading = Off for the webhook address); otherwise leave this empty, or every message is refused."
+  INBOUND_USERNAME_LABEL: "Inbound username"
+  INBOUND_USERNAME_HELP: "Optional. If you put a username and password in the Destination URL in SendGrid (https://name:password@…), enter the same pair here and every post must carry them."
+  INBOUND_PASSWORD_LABEL: "Inbound password"
+  INBOUND_PASSWORD_HELP: "The password that goes with the inbound username. Set both or neither."
 
 ICU:
   PLUGIN_EMAIL_SENDGRID:
@@ -28,3 +36,11 @@ ICU:
     SETUP_API_KEY_HELP: "Only needed if the key above is restricted to Mail Send, which cannot create a webhook. Make a second key in SendGrid with full access to Webhook and paste it here. Nothing sends with it; it is used only when you press Set up."
     PROVIDER_INSTRUCTIONS: "In SendGrid, go to Settings, then Mail Settings, then Event Webhooks, and add a webhook with this address. Tick Delivered, Bounced, Dropped, Spam Reports, Opened and Clicked, and leave Processed, Deferred and the three unsubscribe events off, because nothing here acts on them. Then turn on Signed Event Webhook and press Save: the verification key does not exist until that first save. Copy the key it shows into the Verification key field in this plugin's settings, exactly as SendGrid prints it, and the PEM wrapper will be added for you."
     ECHO_NOTE: "SendGrid does not send message headers back in its webhooks. It sends the message's custom args instead, as top-level fields on the event, so a send id has to go out as a custom arg — over SMTP that is the unique_args map inside the X-SMTPAPI header. Correlating on Message-ID needs none of that and works on every event, because SendGrid echoes it as smtp-id."
+    RECEIVING_MAIL_TITLE: "Receiving mail"
+    RECEIVING_MAIL_TEXT: "SendGrid's Inbound Parse can post the mail sent to your domain to this site, for an add-on that receives email such as a helpdesk. The add-on gives you the address to paste into SendGrid. These fields are optional: without them, the long secret in that address is what protects it. Nothing here affects sending."
+    INBOUND_PUBLIC_KEY_LABEL: "Inbound public key"
+    INBOUND_PUBLIC_KEY_HELP: "The public key of a Parse security policy with signature verification, if you attached one to your Inbound Parse host through SendGrid's API. Signed posts can only be checked where PHP keeps the raw request body (enable_post_data_reading = Off for the webhook address); otherwise leave this empty, or every message is refused."
+    INBOUND_USERNAME_LABEL: "Inbound username"
+    INBOUND_USERNAME_HELP: "Optional. If you put a username and password in the Destination URL in SendGrid (https://name:password@…), enter the same pair here and every post must carry them."
+    INBOUND_PASSWORD_LABEL: "Inbound password"
+    INBOUND_PASSWORD_HELP: "The password that goes with the inbound username. Set both or neither."

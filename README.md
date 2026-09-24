@@ -30,9 +30,12 @@ transport: api
 api_key:
 public_key:
 setup_api_key:
+inbound_public_key:
+inbound_username:
+inbound_password:
 ```
 
-`api_key` is the key SendGrid sends with, and Mail Send is all the permission it needs. `public_key` and `setup_api_key` are only for delivery reports and are covered in their own section below; leave them empty if you are only sending.
+`api_key` is the key SendGrid sends with, and Mail Send is all the permission it needs. `public_key` and `setup_api_key` are only for delivery reports, and the three `inbound_` settings are only for receiving mail; both are covered in their own sections below. Leave them empty if you are only sending.
 
 Note that if you use the Admin Plugin, a file with your configuration named email-sendgrid.yaml will be saved in the `user/config/plugins/`-folder once the configuration is saved in the Admin.
 
@@ -71,6 +74,27 @@ If you would rather not give this plugin a second key, all of it can be done in 
 A bounce is hard when SendGrid calls it `bounce` and soft when it calls it `blocked`. A `dropped` is SendGrid refusing to send at all, because the address is already on its own suppression list or bounced before or reported spam; that is reported as its own thing rather than as a bounce, and most stores will want to treat it like one.
 
 Events are tied back to the message they came from by `Message-ID`, which SendGrid echoes as `smtp-id`. That is the path to rely on, because SendGrid documents two gaps in its own ids: `sg_message_id` is missing from delayed bounces, and custom arguments do not attach to bounce events carrying a `Return-Path`. SendGrid does not send message headers back in a webhook at all — what it sends back is the message's custom args, as top-level fields on the event — so a store that wants a second correlation path sets a custom arg rather than a header, which over SMTP means the `unique_args` map inside `X-SMTPAPI`. The name to use is `X-Grav-Send-Id`, or whatever `providers.send_header` in the Email plugin's configuration says; whatever is sending the mail already knows it.
+
+## Receiving mail
+
+SendGrid's Inbound Parse takes the mail sent to a domain you point at it and posts each message to a web address. This plugin knows how to read those posts and hands that to the Email plugin, so an add-on that receives email (a helpdesk, say) can use SendGrid without knowing anything about it. It needs Email plugin 5.3 or later, the release that added inbound mail; on an older Email plugin this plugin keeps sending exactly as before and simply does not offer a receiver.
+
+The add-on gives you the webhook address. Then:
+
+1. Pick the domain or subdomain that will receive the mail. A subdomain such as `reply.example.com` leaves your normal mailbox alone. It has to be authenticated in SendGrid under **Settings**, **Sender Authentication**.
+2. At your DNS host, add an MX record for that name pointing to `mx.sendgrid.net`, priority 10.
+3. In SendGrid, go to **Settings**, **Inbound Parse**, press **Add Host & URL**, choose the domain and paste the webhook address as the **Destination URL**.
+4. Tick **POST the raw, full MIME message**. The whole message then arrives as it was sent, so the add-on can keep the original and every attachment and charset is read the same way as mail from any other source. Without it SendGrid takes the message apart first; that works too, but there is no original to keep and the attachments have to be copied out during the request.
+5. Tick **Check incoming emails for spam** if you want a spam score passed along.
+
+Messages can be up to 30 MB. SendGrid retries a post that fails with a server error for up to three days, so the add-on answers as soon as the message is stored.
+
+### How a post is trusted
+
+By default SendGrid signs nothing, and the long random secret in the webhook address is the whole of the protection. The add-on shows this receiver as "authenticated by secret URL" for that reason. Two things can be added:
+
+- **Basic auth.** Put a username and password in the Destination URL (`https://name:password@example.com/…`) and the same pair in **Inbound username** and **Inbound password** here, and a post without them is refused.
+- **Signatures.** SendGrid can now sign Parse posts, through a Parse *security policy* with signature verification that you create and attach to the host with SendGrid's API (`POST /v3/user/webhooks/security/policies`, then the host's `security_policy`). Paste the policy's public key into **Inbound public key**. The signature is ECDSA over the timestamp and the raw request body, checked exactly like the Event Webhook's. The catch is PHP's: it does not keep the raw body of a `multipart/form-data` post, and SendGrid always posts that way, so a signature can only be checked where PHP has been told to leave the body alone (`enable_post_data_reading = Off` for the webhook address). With a key set and no raw body, every post is refused and the log says why, so leave the key empty unless you have done that. A security policy can use OAuth instead; checking an OAuth token means calling your OAuth server, which a webhook receiver must not do, so OAuth policies are not supported.
 
 ## Credits
 

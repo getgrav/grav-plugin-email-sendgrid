@@ -12,6 +12,14 @@ PLUGIN_EMAIL_SENDGRID:
   SETUP_API_KEY_HELP: "Solo es necesaria si la clave anterior está restringida a solo envío de correo (Mail Send), que no puede crear un webhook. Crea una segunda clave en SendGrid con acceso completo a Webhook y pégala aquí. No se usa para enviar correo; solo se emplea al pulsar Configurar."
   PROVIDER_INSTRUCTIONS: "En SendGrid, ve a Ajustes, luego Configuración de correo, luego Webhooks de eventos, y añade un webhook con esta dirección. Marca Delivered, Bounced, Dropped, Spam Reports, Opened y Clicked, y deja sin marcar Processed, Deferred y los tres eventos de baja, porque nada aquí actúa sobre ellos. Después activa Signed Event Webhook y pulsa Guardar: la clave de verificación no existe hasta ese primer guardado. Copia la clave que muestra en el campo Clave de verificación de este plugin, exactamente como la imprime SendGrid, y el envoltorio PEM se añadirá automáticamente."
   ECHO_NOTE: "SendGrid no reenvía las cabeceras del mensaje en sus webhooks. En su lugar, envía los argumentos personalizados del mensaje como campos de primer nivel del evento, así que un identificador de envío debe salir como argumento personalizado; por SMTP eso es el mapa unique_args dentro de la cabecera X-SMTPAPI. Correlacionar por Message-ID no necesita nada de eso y funciona en todos los eventos, porque SendGrid lo devuelve como smtp-id."
+  RECEIVING_MAIL_TITLE: "Recepción de correo"
+  RECEIVING_MAIL_TEXT: "Inbound Parse de SendGrid puede enviar a este sitio el correo que llega a tu dominio, para un complemento que recibe correo, como un helpdesk. El complemento te da la dirección que debes pegar en SendGrid. Estos campos son opcionales: sin ellos, el secreto largo de esa dirección es lo que la protege. Nada de esto afecta al envío."
+  INBOUND_PUBLIC_KEY_LABEL: "Clave pública de entrada"
+  INBOUND_PUBLIC_KEY_HELP: "La clave pública de una política de seguridad de Parse con verificación de firma, si asociaste una a tu host de Inbound Parse mediante la API de SendGrid. Las peticiones firmadas solo pueden comprobarse donde PHP conserva el cuerpo original de la petición (enable_post_data_reading = Off para la dirección del webhook); si no, déjalo vacío o se rechazará cada mensaje."
+  INBOUND_USERNAME_LABEL: "Usuario de entrada"
+  INBOUND_USERNAME_HELP: "Opcional. Si pusiste un usuario y una contraseña en la Destination URL de SendGrid (https://usuario:contraseña@…), escribe aquí el mismo par y cada petición deberá incluirlos."
+  INBOUND_PASSWORD_LABEL: "Contraseña de entrada"
+  INBOUND_PASSWORD_HELP: "La contraseña que acompaña al usuario de entrada. Rellena los dos o ninguno."
 
 ICU:
   PLUGIN_EMAIL_SENDGRID:
@@ -28,3 +36,11 @@ ICU:
     SETUP_API_KEY_HELP: "Solo es necesaria si la clave anterior está restringida a solo envío de correo (Mail Send), que no puede crear un webhook. Crea una segunda clave en SendGrid con acceso completo a Webhook y pégala aquí. No se usa para enviar correo; solo se emplea al pulsar Configurar."
     PROVIDER_INSTRUCTIONS: "En SendGrid, ve a Ajustes, luego Configuración de correo, luego Webhooks de eventos, y añade un webhook con esta dirección. Marca Delivered, Bounced, Dropped, Spam Reports, Opened y Clicked, y deja sin marcar Processed, Deferred y los tres eventos de baja, porque nada aquí actúa sobre ellos. Después activa Signed Event Webhook y pulsa Guardar: la clave de verificación no existe hasta ese primer guardado. Copia la clave que muestra en el campo Clave de verificación de este plugin, exactamente como la imprime SendGrid, y el envoltorio PEM se añadirá automáticamente."
     ECHO_NOTE: "SendGrid no reenvía las cabeceras del mensaje en sus webhooks. En su lugar, envía los argumentos personalizados del mensaje como campos de primer nivel del evento, así que un identificador de envío debe salir como argumento personalizado; por SMTP eso es el mapa unique_args dentro de la cabecera X-SMTPAPI. Correlacionar por Message-ID no necesita nada de eso y funciona en todos los eventos, porque SendGrid lo devuelve como smtp-id."
+    RECEIVING_MAIL_TITLE: "Recepción de correo"
+    RECEIVING_MAIL_TEXT: "Inbound Parse de SendGrid puede enviar a este sitio el correo que llega a tu dominio, para un complemento que recibe correo, como un helpdesk. El complemento te da la dirección que debes pegar en SendGrid. Estos campos son opcionales: sin ellos, el secreto largo de esa dirección es lo que la protege. Nada de esto afecta al envío."
+    INBOUND_PUBLIC_KEY_LABEL: "Clave pública de entrada"
+    INBOUND_PUBLIC_KEY_HELP: "La clave pública de una política de seguridad de Parse con verificación de firma, si asociaste una a tu host de Inbound Parse mediante la API de SendGrid. Las peticiones firmadas solo pueden comprobarse donde PHP conserva el cuerpo original de la petición (enable_post_data_reading = Off para la dirección del webhook); si no, déjalo vacío o se rechazará cada mensaje."
+    INBOUND_USERNAME_LABEL: "Usuario de entrada"
+    INBOUND_USERNAME_HELP: "Opcional. Si pusiste un usuario y una contraseña en la Destination URL de SendGrid (https://usuario:contraseña@…), escribe aquí el mismo par y cada petición deberá incluirlos."
+    INBOUND_PASSWORD_LABEL: "Contraseña de entrada"
+    INBOUND_PASSWORD_HELP: "La contraseña que acompaña al usuario de entrada. Rellena los dos o ninguno."

@@ -7,6 +7,7 @@ namespace Grav\Plugin\EmailSendgrid\Provider;
 use Grav\Plugin\Email\Providers\Capabilities;
 use Grav\Plugin\Email\Providers\DeliveryReports;
 use Grav\Plugin\Email\Providers\DomainFacts;
+use Grav\Plugin\Email\Providers\Inbound\InboundReceiver;
 use Grav\Plugin\Email\Providers\Provider;
 use Grav\Plugin\Email\Providers\WebhookSetup;
 
@@ -22,8 +23,16 @@ use Grav\Plugin\Email\Providers\WebhookSetup;
  * of its own. The one thing here that talks to SendGrid is
  * {@see SendGridWebhookSetup}, which is behind a button, and it is only
  * constructed when something asks for it.
+ *
+ * It also receives mail, through {@see SendGridInbound}, on an Email plugin new
+ * enough to have inbound mail. This class does not implement `InboundCapable`
+ * itself, because it loads on every Email plugin that fires `onEmailProviders`,
+ * including the ones from before inbound mail, where naming a missing interface
+ * would be a fatal error. {@see SendGridInboundProvider} adds the interface and
+ * nothing else, and the plugin registers that one when the interface exists.
+ * Not final, for that subclass.
  */
-final class SendGridProvider implements Provider
+class SendGridProvider implements Provider
 {
     /** The engine key this plugin registers on `onEmailEngines`. */
     public const ENGINE = 'sendgrid';
@@ -31,6 +40,8 @@ final class SendGridProvider implements Provider
     private ?SendGridReports $reports = null;
 
     private ?SendGridWebhookSetup $setup = null;
+
+    private ?SendGridInbound $inbound = null;
 
     /**
      * @param array<string, mixed> $config this plugin's own config block
@@ -111,6 +122,19 @@ final class SendGridProvider implements Provider
             new SendGridApi($this->http ?? new CurlHttp()),
             $this->saveKey,
         );
+    }
+
+    /**
+     * The Inbound Parse receiver.
+     *
+     * Safe to declare on an Email plugin without inbound mail: PHP resolves a
+     * return type only when the method returns, never when the class loads, and
+     * nothing calls this there. The caller is the Email plugin's inbound
+     * gateway, through {@see SendGridInboundProvider}.
+     */
+    public function inbound(): InboundReceiver
+    {
+        return $this->inbound ??= new SendGridInbound();
     }
 
     /**

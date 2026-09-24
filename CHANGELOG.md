@@ -1,3 +1,11 @@
+# v1.2.0
+## 09/24/2026
+
+1. [](#new)
+    * **Receiving mail through SendGrid's Inbound Parse.** On an Email plugin that has inbound mail, this plugin now offers a `sendgrid` receiver, so an add-on that receives email (a helpdesk, say) can take SendGrid's posts without knowing anything about SendGrid. It reads both ways SendGrid posts: the whole message when "POST the raw, full MIME message" is ticked, which is the one to use, and SendGrid's parsed form with its headers, bodies, `attachmentN` files, `attachment-info` and `content-ids`. Bodies are converted to UTF-8 by the charsets SendGrid names, the SMTP envelope is kept (it is where a `support+token@` address survives), and SendGrid's SPF and DKIM results and spam score are passed along
+    * Added optional `inbound_public_key`, `inbound_username` and `inbound_password` settings. Without them a post is trusted by the secret in its address alone. With a username and password, every post has to carry them as basic auth. With a public key from a Parse security policy, every post has to carry SendGrid's signature, which can only be checked where PHP keeps the raw request body; the README explains
+    * On an Email plugin from before inbound mail, nothing changes: the provider still loads and sends exactly as before, and simply offers no receiver
+
 # v1.1.3
 ## 09/09/2026
 

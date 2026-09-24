@@ -5,6 +5,7 @@ use Composer\Autoload\ClassLoader;
 use Grav\Common\File\CompiledYamlFile;
 use Grav\Common\Grav;
 use Grav\Common\Plugin;
+use Grav\Plugin\EmailSendgrid\Provider\SendGridInboundProvider;
 use Grav\Plugin\EmailSendgrid\Provider\SendGridProvider;
 use RocketTheme\Toolbox\Event\Event;
 
@@ -78,6 +79,12 @@ class EmailSendgridPlugin extends Plugin
      * and that plugin only fires it on PHP 8.1 and above, so nothing under
      * `classes/` is ever loaded on a site where it would not parse.
      *
+     * Where the Email plugin also has inbound mail, the provider registered is
+     * {@see SendGridInboundProvider}, which is the same provider marked as able
+     * to receive mail through Inbound Parse. On an older Email plugin that
+     * interface does not exist, and naming it would be a fatal error, so the
+     * plain provider is registered instead.
+     *
      * @param Event $e
      * @return void
      */
@@ -90,7 +97,11 @@ class EmailSendgridPlugin extends Plugin
 
         $config = $this->config->get('plugins.email-sendgrid');
 
-        $registry->add(new SendGridProvider(
+        $class = interface_exists('Grav\\Plugin\\Email\\Providers\\Inbound\\InboundCapable')
+            ? SendGridInboundProvider::class
+            : SendGridProvider::class;
+
+        $registry->add(new $class(
             is_array($config) ? $config : [],
             function ($publicKey) {
                 return $this->saveSetting('public_key', $publicKey);

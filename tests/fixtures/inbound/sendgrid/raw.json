@@ -1,0 +1,16 @@
+{
+  "_comment": "SendGrid Inbound Parse with \"POST the raw, full MIME message\" ticked: the message in one email field (raw.eml beside this one), plus the envelope and verdicts. Field list from twilio.com/docs/sendgrid/for-developers/parsing-email/setting-up-the-inbound-parse-webhook.",
+  "fields": {
+    "email": "@raw.eml",
+    "dkim": "{@example.com : pass, @mailer.example.org : fail}",
+    "to": "support@reply.example.com",
+    "from": "Kim Park <kim@example.com>",
+    "subject": "Re: [#1003] Screen flickers",
+    "sender_ip": "17.58.63.1",
+    "spam_report": "",
+    "envelope": "{\"to\": [\"support+t41xq@reply.example.com\"], \"from\": \"kim@example.com\"}",
+    "charsets": "{\"to\": \"UTF-8\", \"from\": \"UTF-8\", \"subject\": \"UTF-8\"}",
+    "SPF": "pass",
+    "spam_score": "-0.4"
+  }
+}
